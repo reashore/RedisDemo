@@ -11,8 +11,15 @@ namespace RedisDemo
         public static void Main()
         {
             DemoRedisNativeClient();
+            Console.WriteLine("------------------------------");
             DemoRedisClient();
+            Console.WriteLine("------------------------------");
             DemoRedisTypedClient();
+            Console.WriteLine("------------------------------");
+            DemoRedisTransaction();
+            Console.WriteLine("------------------------------");
+            //DemoPublishSubscribe();
+            Console.WriteLine("------------------------------");
 
             Console.WriteLine("Done");
             Console.ReadKey();
@@ -89,19 +96,36 @@ namespace RedisDemo
                 Console.WriteLine($"Customer = {customer.Id}, {customer.Name}");
             }
         }
-    }
 
-    public class Customer
-    {
-        public long Id { get; set; }
-        public string Name { get; set; }
-        public string Address { get; set; }
-        public List<Order> Orders { get; set; }
-    }
+        private static void DemoRedisTransaction()
+        {
+            using (IRedisClient redisClient = new RedisClient())
+            {
+                const string key = "abc";
+                IRedisTransaction transaction = redisClient.CreateTransaction();
+                transaction.QueueCommand(c => c.Set(key, 1));
+                transaction.QueueCommand(c => c.Increment(key, 1));
+                transaction.Commit();
 
-    public class Order
-    {
-        public string OrderNumber { get; set; }
-        public decimal OrderTotal { get; set; }
+                int result = redisClient.Get<int>(key);
+                Console.WriteLine($"Result = {result}");
+            }
+        }
+
+        private static void DemoPublishSubscribe()
+        {
+            using (IRedisClient redisClient = new RedisClient())
+            {
+                redisClient.PublishMessage("debug", "Published message");
+            }
+
+            using (IRedisClient redisClient = new RedisClient())
+            {
+                IRedisSubscription subscription = redisClient.CreateSubscription();
+                subscription.OnMessage = (c, m) => Console.WriteLine($"Message from channel {c} = {m}");
+                // Console waits here
+                subscription.SubscribeToChannels("news");
+            }
+        }
     }
 }
