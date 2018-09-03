@@ -8,6 +8,15 @@ namespace RedisDemo
     {
         public static void Main()
         {
+            DemoRedisNativeClient();
+            DemoRedisClient();
+
+            Console.WriteLine("Done");
+            Console.ReadKey();
+        }
+
+        private static void DemoRedisNativeClient()
+        {
             const string key = "urn:messages:1";
 
             using (IRedisNativeClient redisNativeClient = new RedisClient())
@@ -21,9 +30,31 @@ namespace RedisDemo
                 string result = Encoding.UTF8.GetString(bytes);
                 Console.WriteLine($"Message = {result}");
             }
+        }
 
-            Console.WriteLine("Done");
-            Console.ReadKey();
+        private static void DemoRedisClient()
+        {
+            const string customerListKey = "urn:customerList";
+
+            using (IRedisClient redisClient = new RedisClient())
+            {
+                IRedisList customerList = redisClient.Lists[customerListKey];
+                customerList.Clear();
+                customerList.Add("Joe");
+                customerList.Add("Mary");
+                customerList.Add("Bob");
+                customerList.Add("Frank");
+            }
+
+            using (IRedisClient redisClient = new RedisClient())
+            {
+                IRedisList customerList = redisClient.Lists[customerListKey];
+
+                foreach (string customerName in customerList)
+                {
+                    Console.WriteLine($"Customer: {customerName}");
+                }
+            }
         }
     }
 }
