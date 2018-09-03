@@ -1,15 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
+using ServiceStack.Redis;
 
 namespace RedisDemo
 {
-    class Program
+    public class Program
     {
-        static void Main(string[] args)
+        public static void Main()
         {
+            const string key = "urn:messages:1";
+
+            using (IRedisNativeClient redisNativeClient = new RedisClient())
+            {
+                redisNativeClient.Set(key, Encoding.UTF8.GetBytes("Hello World"));
+            }
+
+            using (IRedisNativeClient redisNativeClient = new RedisClient())
+            {
+                byte[] bytes = redisNativeClient.Get(key);
+                string result = Encoding.UTF8.GetString(bytes);
+                Console.WriteLine($"Message = {result}");
+            }
+
+            Console.WriteLine("Done");
+            Console.ReadKey();
         }
     }
 }
