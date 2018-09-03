@@ -69,7 +69,7 @@ namespace RedisDemo
 
         private static void DemoRedisTypedClient()
         {
-            long lastCustomerId = 0;
+            long lastCustomerId;
 
             using (IRedisClient redisClient = new RedisClient())
             {
